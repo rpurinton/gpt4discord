@@ -1,0 +1,10 @@
+[
+    {
+        "path": "php://stdout",
+        "level": "DEBUG"
+    },
+    {
+        "path": "logs/error.log",
+        "level": "ERROR"
+    }
+]

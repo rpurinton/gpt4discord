@@ -1,0 +1,7 @@
+{
+    "host": "127.0.0.1",
+    "vhost": "framework2",
+    "user": "framework2",
+    "password": "framework2",
+    "heartbeat": 1000
+}
