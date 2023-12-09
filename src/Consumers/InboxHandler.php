@@ -29,11 +29,11 @@ class InboxHandler
     private function validateConfig(array $config): bool
     {
         $requiredKeys = [
-            'log' => "Log",
-            'loop' => "LoopInterface",
-            'mq' => "Consumer",
-            'pub' => "Publisher",
-            'sql' => "MySQL"
+            'log' => 'RPurinton\GPT4discord\Log',
+            'loop' => 'React\EventLoop\LoopInterface',
+            'mq' => 'RPurinton\GPT4discord\RabbitMQ\Consumer',
+            'pub' => 'RPurinton\GPT4discord\RabbitMQ\Publisher',
+            'sql' => 'RPurinton\GPT4discord\MySQL'
         ];
         foreach ($requiredKeys as $key => $class) {
             if (!array_key_exists($key, $config)) throw new Error("missing required key $key");
