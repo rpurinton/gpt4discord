@@ -2,6 +2,7 @@
 
 namespace RPurinton\GPT4discord\Consumers;
 
+use stdClass;
 use Bunny\{Channel, Message};
 use React\EventLoop\LoopInterface;
 use RPurinton\GPT4discord\{Log, Error, MySQL};
@@ -23,7 +24,7 @@ class InboxHandler
         $this->mq = $config['mq'];
         $this->pub = $config['pub'];
         $this->sql = $config['sql'];
-        $this->log->debug("construct");
+        $this->log->debug('construct');
     }
 
     private function validateConfig(array $config): bool
@@ -36,29 +37,113 @@ class InboxHandler
             'sql' => 'RPurinton\GPT4discord\MySQL'
         ];
         foreach ($requiredKeys as $key => $class) {
-            if (!array_key_exists($key, $config)) throw new Error("missing required key $key");
-            if (!is_a($config[$key], $class)) throw new Error("invalid type for $key");
+            if (!array_key_exists($key, $config)) throw new Error('missing required key ' . $key);
+            if (!is_a($config[$key], $class)) throw new Error('invalid type for ' . $key);
         }
         return true;
     }
 
     public function init(): bool
     {
-        $this->log->debug("init");
-        $this->mq->connect($this->loop, "inbox", $this->callback(...)) or throw new Error("failed to connect to queue");
+        $this->log->debug('init');
+        $this->mq->connect($this->loop, 'inbox', $this->callback(...)) or throw new Error('failed to connect to queue');
         return true;
     }
 
     public function callback(Message $message, Channel $channel): bool
     {
-        $this->log->debug("callback", [$message->content]);
-        $content = json_decode($message->content);
-        if ($content->op === 11) // heartbeat
+        $this->log->debug('callback', [$message->content]);
+        $content = json_decode($message->content, true);
+        if ($content['op'] === 11) // heartbeat
         {
-            $this->sql->query("SELECT 1"); // keep MySQL connection alive
-            $this->pub->publish("outbox", $content) or throw new Error("failed to publish message to outbox");
-        }
+            $this->sql->query('SELECT 1'); // keep MySQL connection alive
+            $this->pub->publish('outbox', $content) or throw new Error('failed to publish message to outbox');
+        } else $this->route($content) or throw new Error('failed to route message');
         $channel->ack($message);
         return true;
+    }
+
+    private function route(array $content): bool
+    {
+        $this->log->debug('route', [$content['t']]);
+        switch ($content['t']) {
+            case 'MESSAGE_CREATE':
+                return $this->messageCreate($content['d']);
+            case 'MESSAGE_UPDATE':
+                return $this->messageUpdate($content['d']);
+            case 'MESSAGE_DELETE':
+                return $this->messageDelete($content['d']);
+            case 'MESSAGE_REACTION_ADD':
+                return $this->messageReactionAdd($content['d']);
+            case 'MESSAGE_REACTION_REMOVE':
+                return $this->messageReactionRemove($content['d']);
+        }
+        return true;
+    }
+
+    private function getId(): string
+    {
+        $this->log->debug('getId');
+        $result = $this->sql->query('SELECT `discord_id` FROM `discord_tokens` LIMIT 1');
+        if ($result === false) throw new Error('failed to get discord_id');
+        if ($result->num_rows === 0) throw new Error('no discord_id found');
+        $row = $result->fetch_assoc();
+        $id = $row['discord_id'];
+        $this->validateId($id);
+        return $id;
+    }
+
+    private function validateId($id)
+    {
+        $this->log->debug('validateId');
+        if (!is_int($id)) throw new Error('id is not an integer');
+        if ($id < 0) throw new Error('id is negative');
+        return true;
+    }
+
+    private function messageCreate(array $data): bool
+    {
+        $this->log->debug('messageCreate', ['data' => $data]);
+        if ($data['author']['id'] === $this->getId()) return true; // ignore messages from self
+        if ($data['content'] === '!ping') {
+            $this->pub->publish('outbox', [
+                't' => 'MESSAGE_CREATE',
+                'd' => [
+                    'content' => 'Pong!',
+                    'channel_id' => $data['channel_id']
+                ]
+            ]) or throw new Error('failed to publish message to outbox');
+        }
+        return true;
+    }
+
+    // placeholders only for other functions for now
+    private function messageUpdate(array $data): bool
+    {
+        $this->log->debug('messageUpdate', ['data' => $data]);
+        return true;
+    }
+
+    private function messageDelete(array $data): bool
+    {
+        $this->log->debug('messageDelete', ['data' => $data]);
+        return true;
+    }
+
+    private function messageReactionAdd(array $data): bool
+    {
+        $this->log->debug('messageReactionAdd', ['data' => $data]);
+        return true;
+    }
+
+    private function messageReactionRemove(array $data): bool
+    {
+        $this->log->debug('messageReactionRemove', ['data' => $data]);
+        return true;
+    }
+
+    public function __destruct()
+    {
+        $this->mq->disconnect() or throw new Error('failed to disconnect from RabbitMQ');
     }
 }

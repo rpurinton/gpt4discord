@@ -96,12 +96,8 @@ class DiscordClient
     {
         $this->log->debug("getToken");
         $result = $this->sql->query("SELECT `discord_token` FROM `discord_tokens` LIMIT 1");
-        if ($result === false) {
-            throw new Error("failed to get discord_token");
-        }
-        if ($result->num_rows === 0) {
-            throw new Error("no discord_token found");
-        }
+        if ($result === false) throw new Error("failed to get discord_token");
+        if ($result->num_rows === 0) throw new Error("no discord_token found");
         $row = $result->fetch_assoc();
         $token = $row["discord_token"];
         $this->validateToken($token);
@@ -111,15 +107,9 @@ class DiscordClient
     private function validateToken($token)
     {
         $this->log->debug("validateToken");
-        if (!is_string($token)) {
-            throw new Error("token is not a string");
-        }
-        if (strlen($token) === 0) {
-            throw new Error("token is empty");
-        }
-        if (strlen($token) !== 72) {
-            throw new Error("token is not 72 characters");
-        }
+        if (!is_string($token)) throw new Error("token is not a string");
+        if (strlen($token) === 0) throw new Error("token is empty");
+        if (strlen($token) !== 72) throw new Error("token is not 72 characters");
         return true;
     }
 }
