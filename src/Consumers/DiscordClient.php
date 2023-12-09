@@ -2,13 +2,13 @@
 
 namespace RPurinton\GPT4discord\Consumers;
 
-use Bunny\{Channel as MQChannel, Message as MQMessage};
+use Bunny\{Channel, Message};
 use Discord\{Discord, WebSockets\Intents};
-use Discord\Parts\Channel\{Channel as DCChannel, Message as DCMessage};
 use Discord\Parts\User\Activity;
 use React\{Async, EventLoop\LoopInterface};
 use RPurinton\GPT4discord\{Log, Error, MySQL};
 use RPurinton\GPT4discord\RabbitMQ\{Consumer, Publisher};
+use stdClass;
 
 class DiscordClient
 {
@@ -48,13 +48,13 @@ class DiscordClient
         return true;
     }
 
-    private function raw(DCMessage $message, Discord $discord): bool
+    private function raw(stdClass $message, Discord $discord): bool // from Discord\Discord::onRaw
     {
         $this->log->debug("raw", ['message' => $message]);
         return true;
     }
 
-    public function callback(MQMessage $message, MQChannel $channel): bool
+    public function callback(Message $message, Channel $channel): bool // from RabbitMQ\Consumer::connect
     {
         $this->log->debug("callback", [$message->content]);
         $channel->ack($message);
