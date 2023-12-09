@@ -10,6 +10,7 @@ use RPurinton\GPT4discord\RabbitMQ\{Consumer, Publisher};
 
 class InboxHandler
 {
+    private ?int $id = null;
     private ?Log $log = null;
     private ?LoopInterface $loop = null;
     private ?Consumer $mq = null;
@@ -46,6 +47,7 @@ class InboxHandler
     public function init(): bool
     {
         $this->log->debug('init');
+        $this->id = $this->getId();
         $this->mq->connect($this->loop, 'inbox', $this->callback(...)) or throw new Error('failed to connect to queue');
         return true;
     }
@@ -104,17 +106,15 @@ class InboxHandler
     private function messageCreate(array $data): bool
     {
         $this->log->debug('messageCreate', ['data' => $data]);
-        if ($data['author']['id'] === $this->getId()) return true; // ignore messages from self
-        if ($data['content'] === '!ping') {
-            $this->pub->publish('outbox', [
-                'op' => 0, // 'DISPATCH'
-                't' => 'MESSAGE_CREATE',
-                'd' => [
-                    'content' => 'Pong!',
-                    'channel_id' => $data['channel_id']
-                ]
-            ]) or throw new Error('failed to publish message to outbox');
-        }
+        if ($data['author']['id'] === $this->id) return true; // ignore messages from self
+        if ($data['content'] === '!ping') $this->pub->publish('outbox', [
+            'op' => 0, // DISPATCH
+            't' => 'MESSAGE_CREATE',
+            'd' => [
+                'content' => 'Pong!',
+                'channel_id' => $data['channel_id']
+            ]
+        ]) or throw new Error('failed to publish message to outbox');
         return true;
     }
 

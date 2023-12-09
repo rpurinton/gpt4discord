@@ -103,10 +103,97 @@ class DiscordClient
         return true;
     }
 
-    private function messageCreate(array $data): bool
+    private function splitMessage(string $content): array
     {
-        $this->log->debug('messageCreate', ['data' => $data]);
+        $lines = explode('\n', $content . ' ');
+        $mode = 'by_line';
+        while (count($lines)) {
+            $line = array_shift($lines);
+            if (strlen($line) <= 2000) {
+                return ['content' => $line, 'remaining' => $lines, 'mode' => $mode];
+            }
+            if ($mode !== 'by_char') {
+                $split = $mode === 'by_line' ? explode('. ', $line) : explode(' ', $line);
+                $mode = $mode === 'by_line' ? 'by_sentence' : 'by_word';
+                $lines = array_merge($split, $lines);
+            } else {
+                $lines = array_merge(str_split($line), $lines);
+            }
+        }
+        return ['content' => '', 'remaining' => [], 'mode' => $mode];
+    }
+
+    private function sendMessage(array $message): void
+    {
+        $this->discord->getChannel($message['channel_id'])->sendMessage($this->builder($message));
+    }
+
+    private function messageCreate(array $message): bool
+    {
+        $this->log->debug('messageCreate', ['message' => $message]);
+        if (!isset($message['content']) || strlen($message['content']) < 2000) {
+            $this->sendMessage($message);
+            return true;
+        }
+        $content = $message['content'];
+        while (strlen($content)) {
+            $split = $this->splitMessage($content);
+            $content = implode($split['mode'] === 'by_char' ? '' : ' ', $split['remaining']);
+            $message['content'] = $split['content'];
+            $this->sendMessage($message);
+        }
         return true;
+    }
+
+    private function builder($message)
+    {
+        $builder = \Discord\Builders\MessageBuilder::new();
+        $this->setContent($builder, $message);
+        $this->addFileFromContent($builder, $message);
+        $this->addAttachments($builder, $message);
+        $this->addEmbeds($builder, $message);
+        $this->setAllowedMentions($builder, $message);
+        return $builder;
+    }
+
+    private function setContent($builder, $message)
+    {
+        if (isset($message['content'])) $builder->setContent($message['content']);
+    }
+
+    private function addFileFromContent($builder, $message)
+    {
+        if (isset($message['addFileFromContent'])) foreach ($message['addFileFromContent'] as $attachment) $builder->addFileFromContent($attachment['filename'], $attachment['content']);
+    }
+
+    private function addAttachments($builder, $message)
+    {
+        if (isset($message['attachments'])) foreach ($message['attachments'] as $attachment) {
+            $embed = new \Discord\Parts\Embed\Embed($this->discord);
+            $embed->setURL($attachment['url']);
+            $embed->setImage($attachment['url']);
+            $builder->addEmbed($embed);
+        }
+    }
+
+    private function addEmbeds($builder, $message)
+    {
+        if (isset($message['embeds'])) foreach ($message['embeds'] as $old_embed) if ($old_embed['type'] == 'rich') {
+            $new_embed = new \Discord\Parts\Embed\Embed($this->discord);
+            $new_embed->fill($old_embed);
+            $builder->addEmbed($new_embed);
+        }
+    }
+
+    private function setAllowedMentions($builder, $message)
+    {
+        if (isset($message['mentions'])) {
+            $allowed_users = array();
+            foreach ($message['mentions'] as $mention) $allowed_users[] = $mention['id'];
+            $allowed_mentions['parse'] = array('roles', 'everyone');
+            $allowed_mentions['users'] = $allowed_users;
+            $builder->setAllowedMentions($allowed_mentions);
+        }
     }
 
     private function getToken(): string
