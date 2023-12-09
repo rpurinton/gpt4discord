@@ -51,7 +51,7 @@ class DiscordClient
     private function raw(stdClass $message, Discord $discord): bool // from Discord\Discord::onRaw
     {
         $this->log->debug("raw", ['message' => $message]);
-        if ($message->op === 11) $this->sql->query("SELECT 1"); // keep MySQL connection alive
+        if ($message->op === 11) $this->sql->query("SELECT 1"); // heartbeat / keep MySQL connection alive
         $this->pub->publish("inbox", $message) or throw new Error("failed to publish message to inbox");
         return true;
     }
@@ -59,6 +59,8 @@ class DiscordClient
     public function callback(Message $message, Channel $channel): bool // from RabbitMQ\Consumer::connect
     {
         $this->log->debug("callback", [$message->content]);
+        $content = json_decode($message->content);
+        if ($content->op === 11) $this->log->debug("heartbeat circuit complete");
         $channel->ack($message);
         return true;
     }

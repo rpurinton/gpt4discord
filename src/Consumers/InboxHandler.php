@@ -24,6 +24,12 @@ class InboxHandler
     public function callback(Message $message, Channel $channel): bool
     {
         $this->log->debug("callback", [$message->content]);
+        $content = json_decode($message->content);
+        if ($content->op === 11) // heartbeat
+        {
+            $this->sql->query("SELECT 1"); // keep MySQL connection alive
+            $this->pub->publish("outbox", $content) or throw new Error("failed to publish message to outbox");
+        }
         $channel->ack($message);
         return true;
     }
