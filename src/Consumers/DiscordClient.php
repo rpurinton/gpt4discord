@@ -14,10 +14,37 @@ class DiscordClient
 {
     private ?string $token = null;
     private ?Discord $discord = null;
+    private ?Log $log = null;
+    private ?LoopInterface $loop = null;
+    private ?Consumer $mq = null;
+    private ?Publisher $pub = null;
+    private ?MySQL $sql = null;
 
-    public function __construct(private Log $log, private LoopInterface $loop, private Consumer $mq, private Publisher $pub, private MySQL $sql)
+    public function __construct(private array $config)
     {
         $this->log->debug("construct");
+        $this->validateConfig($config);
+        $this->log = $config['log'];
+        $this->loop = $config['loop'];
+        $this->mq = $config['mq'];
+        $this->pub = $config['pub'];
+        $this->sql = $config['sql'];
+    }
+
+    private function validateConfig(array $config): bool
+    {
+        $requiredKeys = [
+            'log' => "Log",
+            'loop' => "LoopInterface",
+            'mq' => "Consumer",
+            'pub' => "Publisher",
+            'sql' => "MySQL"
+        ];
+        foreach ($requiredKeys as $key => $class) {
+            if (!array_key_exists($key, $config)) throw new Error("missing required key $key");
+            if (!is_a($config[$key], $class)) throw new Error("invalid type for $key");
+        }
+        return true;
     }
 
     public function init(): bool
@@ -32,18 +59,18 @@ class DiscordClient
         ];
         $this->discord = new Discord($discord_config);
         $this->discord->on("ready", $this->ready(...));
-		$this->discord->run();
+        $this->discord->run();
         return true;
-	}
+    }
 
-	private function ready()
-	{
+    private function ready()
+    {
         $this->mq->connect($this->loop, "outbox", $this->callback(...)) or throw new Error("failed to connect to queue");
         $activity = $this->discord->factory(Activity::class, [
-			'name' => 'AI Language Model',
-			'type' => Activity::TYPE_PLAYING
-		]);
-		$this->discord->updatePresence($activity);
+            'name' => 'AI Language Model',
+            'type' => Activity::TYPE_PLAYING
+        ]);
+        $this->discord->updatePresence($activity);
         $this->discord->on("raw", $this->raw(...));
         return true;
     }

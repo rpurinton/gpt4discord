@@ -33,8 +33,14 @@ try {
 }
 
 $loop = Loop::get();
-$dc = new DiscordClient($log, $loop, new Consumer, new Publisher($log), new MySQL($log)) or throw new Error("failed to create DiscordClient");
-$dc->init() or throw new Error("failed to initialize Consumer");
+$dc = new DiscordClient([
+    'log' => $log,
+    'loop' => $loop,
+    'mq' => new Consumer,
+    'pub' => new Publisher($log),
+    'sql' => new MySQL($log)
+]) or throw new Error("failed to create DiscordClient");
+$dc->init() or throw new Error("failed to initialize DiscordClient");
 $loop->addSignal(SIGINT, function () use ($loop, $log) {
     $log->info("SIGINT received, exiting...");
     $loop->stop();

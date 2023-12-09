@@ -9,9 +9,37 @@ use RPurinton\GPT4discord\RabbitMQ\{Consumer, Publisher};
 
 class InboxHandler
 {
-    public function __construct(private Log $log, private LoopInterface $loop, private Consumer $mq, private Publisher $pub, private MySQL $sql)
+    private ?Log $log = null;
+    private ?LoopInterface $loop = null;
+    private ?Consumer $mq = null;
+    private ?Publisher $pub = null;
+    private ?MySQL $sql = null;
+
+    public function __construct(private array $config)
     {
         $this->log->debug("construct");
+        $this->validateConfig($config);
+        $this->log = $config['log'];
+        $this->loop = $config['loop'];
+        $this->mq = $config['mq'];
+        $this->pub = $config['pub'];
+        $this->sql = $config['sql'];
+    }
+
+    private function validateConfig(array $config): bool
+    {
+        $requiredKeys = [
+            'log' => "Log",
+            'loop' => "LoopInterface",
+            'mq' => "Consumer",
+            'pub' => "Publisher",
+            'sql' => "MySQL"
+        ];
+        foreach ($requiredKeys as $key => $class) {
+            if (!array_key_exists($key, $config)) throw new Error("missing required key $key");
+            if (!is_a($config[$key], $class)) throw new Error("invalid type for $key");
+        }
+        return true;
     }
 
     public function init(): bool

@@ -31,8 +31,15 @@ try {
     echo ("Fatal Error " . $e->getMessage() . "\n");
     exit(1);
 }
+
 $loop = Loop::get();
-$ih = new InboxHandler($log, $loop, new Consumer, new Publisher($log), new MySQL($log)) or throw new Error("failed to create InboxHandler");
+$ih = new InboxHandler([
+    'log' => $log,
+    'loop' => $loop,
+    'mq' => new Consumer,
+    'pub' => new Publisher($log),
+    'sql' => new MySQL($log)
+]) or throw new Error("failed to create Consumer");
 $ih->init() or throw new Error("failed to initialize Consumer");
 $loop->addSignal(SIGINT, function () use ($loop, $log) {
     $log->info("SIGINT received, exiting...");
