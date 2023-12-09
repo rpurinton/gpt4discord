@@ -22,13 +22,13 @@ class DiscordClient
 
     public function __construct(private array $config)
     {
-        $this->log->debug("construct");
         $this->validateConfig($config);
         $this->log = $config['log'];
         $this->loop = $config['loop'];
         $this->mq = $config['mq'];
         $this->pub = $config['pub'];
         $this->sql = $config['sql'];
+        $this->log->debug("construct");
     }
 
     private function validateConfig(array $config): bool
