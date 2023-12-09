@@ -107,6 +107,7 @@ class InboxHandler
         if ($data['author']['id'] === $this->getId()) return true; // ignore messages from self
         if ($data['content'] === '!ping') {
             $this->pub->publish('outbox', [
+                'op' => 0, // 'DISPATCH'
                 't' => 'MESSAGE_CREATE',
                 'd' => [
                     'content' => 'Pong!',
