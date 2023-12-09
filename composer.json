@@ -20,6 +20,7 @@
     "require": {
         "react/async": "^4.2",
         "bunny/bunny": "@dev",
-        "monolog/monolog": "^3.5"
+        "monolog/monolog": "^3.5",
+        "team-reflex/discord-php": "^7.3"
     }
 }
