@@ -2,7 +2,6 @@
 
 namespace RPurinton\GPT4discord\Consumers;
 
-use stdClass;
 use Bunny\{Channel, Message};
 use React\EventLoop\LoopInterface;
 use RPurinton\GPT4discord\{Log, Error, MySQL};
