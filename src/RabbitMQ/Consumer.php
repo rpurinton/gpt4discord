@@ -17,7 +17,7 @@ class Consumer
     {
         $this->queue = $queue;
         $this->consumerTag = bin2hex(random_bytes(8));
-        $this->client = new Client($loop, Config::get("rabbitmq")) or throw new Error('Failed to establish the client');
+        $this->client = new Client($loop, Config::get('rabbitmq')) or throw new Error('Failed to establish the client');
         $this->client = Async\await($this->client->connect()) or throw new Error('Failed to establish the connection');
         $this->channel = Async\await($this->client->channel()) or throw new Error('Failed to establish the channel');
         $this->channel->qos(0, 1) or throw new Error('Failed to set the QoS');

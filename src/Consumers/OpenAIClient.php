@@ -8,7 +8,7 @@ use React\EventLoop\LoopInterface;
 use RPurinton\GPT4discord\{Log, Error, MySQL};
 use RPurinton\GPT4discord\RabbitMQ\{Consumer, Publisher};
 
-class InboxHandler
+class OpenAIClient
 {
     private ?int $id = null;
     private ?Log $log = null;
@@ -48,7 +48,7 @@ class InboxHandler
     {
         $this->log->debug('init');
         $this->id = $this->getId();
-        $this->mq->connect($this->loop, 'inbox', $this->callback(...)) or throw new Error('failed to connect to queue');
+        $this->mq->connect($this->loop, 'openai', $this->callback(...)) or throw new Error('failed to connect to queue');
         return true;
     }
 
@@ -59,7 +59,7 @@ class InboxHandler
         if ($content['op'] === 11) // heartbeat
         {
             $this->sql->query('SELECT 1'); // keep MySQL connection alive
-            $this->pub->publish('outbox', $content) or throw new Error('failed to publish message to outbox');
+            $this->pub->publish('discord', $content) or throw new Error('failed to publish message to discord');
         } else $this->route($content) or throw new Error('failed to route message');
         $channel->ack($message);
         return true;
@@ -109,14 +109,14 @@ class InboxHandler
         $log_id = 0;
         if (isset($message['attachments']) && count($message['attachments']) && substr($message['attachments'][0]['content_type'], 0, 5) == 'image') $image_url = $message['attachments'][0]['url'];
         if ($data['author']['id'] === $this->id) return true; // ignore messages from self
-        if ($data['content'] === '!ping') $this->pub->publish('outbox', [
+        if ($data['content'] === '!ping') $this->pub->publish('discord', [
             'op' => 0, // DISPATCH
             't' => 'MESSAGE_CREATE',
             'd' => [
                 'content' => 'Pong!',
                 'channel_id' => $data['channel_id']
             ]
-        ]) or throw new Error('failed to publish message to outbox');
+        ]) or throw new Error('failed to publish message to discord');
         return true;
     }
 

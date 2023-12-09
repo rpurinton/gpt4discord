@@ -14,9 +14,9 @@ class MySQL
     public function connect(): bool
     {
         try {
-            extract(Config::get("mysql")) or throw new Error("failed to extract mysql config");
-            $this->sql = mysqli_connect($hostname, $username, $password, $database) or throw new Error("failed to connect to mysql");
-            $this->log->debug("MySQL connected");
+            extract(Config::get('mysql')) or throw new Error('failed to extract mysql config');
+            $this->sql = mysqli_connect($hostname, $username, $password, $database) or throw new Error('failed to connect to mysql');
+            $this->log->debug('MySQL connected');
             return true;
         } catch (\mysqli_sql_exception $e) {
             throw new Error($e->getMessage(), $e->getCode(), $e);

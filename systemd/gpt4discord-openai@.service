@@ -1,5 +1,5 @@
 [Unit]
-Description=GPT4discord InboxHandler %i
+Description=GPT4discord OpenAIClient %i
 PartOf=gpt4discord.target
 After=network.target
 
@@ -7,7 +7,7 @@ After=network.target
 Type=simple
 User=root
 Group=root
-ExecStart=/var/www/gpt4discord/scripts/inboxhandler.php %i
+ExecStart=/var/www/gpt4discord/scripts/openaiclient.php %i
 Restart=on-failure
 RestartSec=5
 

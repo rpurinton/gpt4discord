@@ -65,7 +65,7 @@ class DiscordClient
 
     private function ready()
     {
-        $this->mq->connect($this->loop, 'outbox', $this->callback(...)) or throw new Error('failed to connect to queue');
+        $this->mq->connect($this->loop, 'discord', $this->callback(...)) or throw new Error('failed to connect to queue');
         $activity = $this->discord->factory(Activity::class, [
             'name' => 'AI Language Model',
             'type' => Activity::TYPE_PLAYING
@@ -79,7 +79,7 @@ class DiscordClient
     {
         $this->log->debug('raw', ['message' => $message]);
         if ($message->op === 11) $this->sql->query('SELECT 1'); // heartbeat / keep MySQL connection alive
-        $this->pub->publish('inbox', $message) or throw new Error('failed to publish message to inbox');
+        $this->pub->publish('openai', $message) or throw new Error('failed to publish message to openai');
         return true;
     }
 

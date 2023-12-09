@@ -13,7 +13,7 @@ class Publisher
 
     public function __construct(private Log $log)
     {
-        $this->client = new Client(Config::get("rabbitmq")) or throw new Error('Failed to establish the client');
+        $this->client = new Client(Config::get('rabbitmq')) or throw new Error('Failed to establish the client');
         $this->client = $this->client->connect() or throw new Error('Failed to establish the connection');
         $this->channel = $this->client->channel() or throw new Error('Failed to establish the channel');
     }
@@ -24,13 +24,13 @@ class Publisher
         try {
             $result = $this->channel->publish(json_encode($data), [], '', $queue) or throw new Error('Failed to publish the message');
         } catch (\Throwable $e) {
-            $this->log->error($e->getMessage(), ["trace" => $e->getTrace()]);
+            $this->log->error($e->getMessage(), ['trace' => $e->getTrace()]);
         } catch (\Error $e) {
-            $this->log->error($e->getMessage(), ["trace" => $e->getTrace()]);
+            $this->log->error($e->getMessage(), ['trace' => $e->getTrace()]);
         } catch (\Exception $e) {
-            $this->log->error($e->getMessage(), ["trace" => $e->getTrace()]);
+            $this->log->error($e->getMessage(), ['trace' => $e->getTrace()]);
         } catch (\Bunny\Exception\BunnyException $e) {
-            $this->log->error($e->getMessage(), ["trace" => $e->getTrace()]);
+            $this->log->error($e->getMessage(), ['trace' => $e->getTrace()]);
         }
         return $result;
     }
