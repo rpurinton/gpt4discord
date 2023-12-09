@@ -1,0 +1,15 @@
+[Unit]
+Description=GPT4discord Client
+PartOf=gpt4discord.target
+After=network.target
+
+[Service]
+Type=simple
+User=gpt4discord
+Group=gpt4discord
+ExecStart=/var/www/gpt4discord/scripts/discordclient.php
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=gpt4discord.target

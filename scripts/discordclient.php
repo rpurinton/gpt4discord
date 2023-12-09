@@ -1,12 +1,11 @@
 #!/usr/bin/env php
 <?php
 
-namespace RPurinton\Framework2;
+namespace RPurinton\GPT4discord;
 
 use React\EventLoop\Loop;
-use RPurinton\Framework2\Error;
-use RPurinton\Framework2\RabbitMQ\Consumer as MQConsumer;
-use RPurinton\Framework2\Consumers\Consumer;
+use RPurinton\GPT4discord\RabbitMQ\Consumer;
+use RPurinton\GPT4discord\Consumers\DiscordClient;
 
 $worker_id = $argv[1] ?? 0;
 
@@ -33,8 +32,8 @@ try {
     exit(1);
 }
 $loop = Loop::get();
-$mqconsumer = new Consumer($log, $loop, new MQConsumer) or throw new Error("failed to create Consumer");
-$mqconsumer->init() or throw new Error("failed to initialize Consumer");
+$dc = new DiscordClient($log, $loop, new Consumer, new MySQL($log)) or throw new Error("failed to create DiscordClient");
+$dc->init() or throw new Error("failed to initialize Consumer");
 $loop->addSignal(SIGINT, function () use ($loop, $log) {
     $log->info("SIGINT received, exiting...");
     $loop->stop();

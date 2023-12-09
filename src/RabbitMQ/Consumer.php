@@ -1,8 +1,8 @@
 <?php
 
-namespace RPurinton\Framework2\RabbitMQ;
+namespace RPurinton\GPT4discord\RabbitMQ;
 
-use RPurinton\Framework2\{Config, Error};
+use RPurinton\GPT4discord\{Config, Error};
 use React\{Async, EventLoop\LoopInterface};
 use Bunny\{Async\Client, Channel};
 

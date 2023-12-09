@@ -1,11 +1,11 @@
 #!/usr/bin/env php
 <?php
 
-namespace RPurinton\Framework2;
+namespace RPurinton\GPT4discord;
 
 use React\EventLoop\Loop;
-use RPurinton\Framework2\Error;
-use RPurinton\Framework2\Consumers\Timers;
+use RPurinton\GPT4discord\RabbitMQ\Consumer;
+use RPurinton\GPT4discord\Consumers\InboxHandler;
 
 $worker_id = $argv[1] ?? 0;
 
@@ -15,7 +15,7 @@ ini_set('display_errors', '1');
 
 try {
     require_once __DIR__ . "/../Composer.php";
-    $log = LogFactory::create("timers-$worker_id") or throw new Error("failed to create log");
+    $log = LogFactory::create("consumer-$worker_id") or throw new Error("failed to create log");
     set_exception_handler(function ($e) use ($log) {
         $log->debug($e->getMessage(), ["trace" => $e->getTrace()]);
         $log->error($e->getMessage());
@@ -32,9 +32,8 @@ try {
     exit(1);
 }
 $loop = Loop::get();
-
-$nlc = new Timers($log, $loop) or throw new Error("failed to construct Timers");
-$nlc->init() or throw new Error("failed to initialize Timers");
+$ih = new InboxHandler($log, $loop, new Consumer, new MySQL($log)) or throw new Error("failed to create InboxHandler");
+$ih->init() or throw new Error("failed to initialize Consumer");
 $loop->addSignal(SIGINT, function () use ($loop, $log) {
     $log->info("SIGINT received, exiting...");
     $loop->stop();

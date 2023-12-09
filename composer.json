@@ -1,6 +1,6 @@
 {
-    "name": "rpurinton/framework2",
-    "description": "Framework2 Project Template",
+    "name": "rpurinton/gpt4discord",
+    "description": "GPT4discord Project Template",
     "type": "project",
     "require-dev": {
         "phpunit/phpunit": "^10.4"
@@ -8,7 +8,7 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "RPurinton\\Framework2\\": "src/"
+            "RPurinton\\GPT4discord\\": "src/"
         }
     },
     "authors": [

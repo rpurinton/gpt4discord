@@ -1,6 +1,6 @@
 <?php
 
-namespace RPurinton\Framework2;
+namespace RPurinton\GPT4discord;
 
 class HTTPS
 {
