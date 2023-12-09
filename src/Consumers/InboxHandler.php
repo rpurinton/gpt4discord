@@ -95,7 +95,7 @@ class InboxHandler
 
     private function validateId($id)
     {
-        $this->log->debug('validateId');
+        $this->log->debug('validateId', ['id' => $id, 'type' => gettype($id)]);
         if (!is_int($id)) throw new Error('id is not an integer');
         if ($id < 0) throw new Error('id is negative');
         return true;
