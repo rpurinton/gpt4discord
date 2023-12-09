@@ -15,7 +15,7 @@ class DiscordClient
     private ?string $token = null;
     private ?Discord $discord = null;
 
-    public function __construct(private Log $log, private LoopInterface $loop, private Consumer $mq, private MySQL $sql)
+    public function __construct(private Log $log, private LoopInterface $loop, private Consumer $mq, private Publisher $pub, private MySQL $sql)
     {
         $this->log->debug("construct");
     }
@@ -39,18 +39,20 @@ class DiscordClient
 	private function ready()
 	{
         $this->mq->connect($this->loop, "outbox", $this->callback(...)) or throw new Error("failed to connect to queue");
-        $this->discord->on("raw", $this->raw(...));
         $activity = $this->discord->factory(Activity::class, [
 			'name' => 'AI Language Model',
 			'type' => Activity::TYPE_PLAYING
 		]);
 		$this->discord->updatePresence($activity);
+        $this->discord->on("raw", $this->raw(...));
         return true;
     }
 
     private function raw(stdClass $message, Discord $discord): bool // from Discord\Discord::onRaw
     {
         $this->log->debug("raw", ['message' => $message]);
+        if ($message->op === 11) $this->sql->query("SELECT 1"); // keep MySQL connection alive
+        $this->pub->publish("inbox", $message) or throw new Error("failed to publish message to inbox");
         return true;
     }
 

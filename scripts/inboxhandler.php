@@ -4,7 +4,7 @@
 namespace RPurinton\GPT4discord;
 
 use React\EventLoop\Loop;
-use RPurinton\GPT4discord\RabbitMQ\Consumer;
+use RPurinton\GPT4discord\RabbitMQ\{Consumer, Publisher};
 use RPurinton\GPT4discord\Consumers\InboxHandler;
 
 $worker_id = $argv[1] ?? 0;
@@ -32,7 +32,7 @@ try {
     exit(1);
 }
 $loop = Loop::get();
-$ih = new InboxHandler($log, $loop, new Consumer, new MySQL($log)) or throw new Error("failed to create InboxHandler");
+$ih = new InboxHandler($log, $loop, new Consumer, new Publisher($log), new MySQL($log)) or throw new Error("failed to create InboxHandler");
 $ih->init() or throw new Error("failed to initialize Consumer");
 $loop->addSignal(SIGINT, function () use ($loop, $log) {
     $log->info("SIGINT received, exiting...");

@@ -9,7 +9,7 @@ use RPurinton\GPT4discord\RabbitMQ\{Consumer, Publisher};
 
 class InboxHandler
 {
-    public function __construct(private Log $log, private LoopInterface $loop, private Consumer $mq, private MySQL $sql)
+    public function __construct(private Log $log, private LoopInterface $loop, private Consumer $mq, private Publisher $pub, private MySQL $sql)
     {
         $this->log->debug("construct");
     }

@@ -4,7 +4,7 @@
 namespace RPurinton\GPT4discord;
 
 use React\EventLoop\Loop;
-use RPurinton\GPT4discord\RabbitMQ\Consumer;
+use RPurinton\GPT4discord\RabbitMQ\{Consumer, Publisher};
 use RPurinton\GPT4discord\Consumers\DiscordClient;
 
 $worker_id = $argv[1] ?? 0;
@@ -31,8 +31,9 @@ try {
     echo ("Fatal Error " . $e->getMessage() . "\n");
     exit(1);
 }
+
 $loop = Loop::get();
-$dc = new DiscordClient($log, $loop, new Consumer, new MySQL($log)) or throw new Error("failed to create DiscordClient");
+$dc = new DiscordClient($log, $loop, new Consumer, new Publisher($log), new MySQL($log)) or throw new Error("failed to create DiscordClient");
 $dc->init() or throw new Error("failed to initialize Consumer");
 $loop->addSignal(SIGINT, function () use ($loop, $log) {
     $log->info("SIGINT received, exiting...");
