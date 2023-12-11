@@ -19,19 +19,19 @@ class Publisher
         $this->channel = $this->client->channel() or throw new Error('Failed to establish the channel');
     }
 
-    public function queueDeclare($queue, $fanout = false): bool
+    public function queueDeclare($queue, $broadcast = false): bool
     {
         $this->log->debug('Publisher::declare', [$queue]);
         $this->channel->queueDeclare($queue, false, false, false, true) or throw new Error('Failed to declare the queue');
-        if ($fanout) $this->channel->queueBind($queue, 'fanout') or throw new Error('Failed to bind the queue');
+        if ($broadcast) $this->channel->queueBind($queue, 'broadcast') or throw new Error('Failed to bind the queue');
         return true;
     }
 
     public function publish(string $queue, array|stdClass $data): bool
     {
         $exchange = '';
-        if ($queue === 'fanout') {
-            $exchange = 'fanout';
+        if ($queue === 'broadcast') {
+            $exchange = 'broadcast';
             $queue = '';
         }
         $this->log->debug('Publisher::publish', ['queue' => $queue, 'data' => $data]);
