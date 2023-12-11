@@ -29,15 +29,14 @@ class Publisher
 
     public function publish(string $queue, array|stdClass $data): bool
     {
-        $exchange = '';
-        if ($queue === 'broadcast') {
-            $exchange = 'broadcast';
-            $queue = '';
-        }
         $this->log->debug('Publisher::publish', ['queue' => $queue, 'data' => $data]);
         $result = false;
         try {
-            $this->queueDeclare($queue);
+            $exchange = '';
+            if ($queue === 'broadcast') {
+                $exchange = 'broadcast';
+                $queue = '';
+            } else $this->queueDeclare($queue);
             $result = $this->channel->publish(json_encode($data), [], $exchange, $queue) or throw new Error('Failed to publish the message');
         } catch (\Throwable $e) {
             $this->log->error($e->getMessage(), ['trace' => $e->getTrace()]);
