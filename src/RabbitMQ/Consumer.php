@@ -14,6 +14,7 @@ class Consumer
 
     public function __construct(private Log $log, private LoopInterface $loop)
     {
+        $this->log->debug('Consumer::__construct');
         $this->client = new Client($this->loop, Config::get('rabbitmq')) or throw new Error('Failed to establish the client');
         $this->client = Async\await($this->client->connect()) or throw new Error('Failed to establish the connection');
         $this->channel = Async\await($this->client->channel()) or throw new Error('Failed to establish the channel');
@@ -22,6 +23,7 @@ class Consumer
 
     public function consume(string $queue, callable $process): mixed
     {
+        $this->log->debug('Consumer::consume', [$queue]);
         $consumerTag = bin2hex(random_bytes(8));
         $this->consumers[$consumerTag] = $queue;
         $this->channel->queueDeclare($queue, false, false, false, true) or throw new Error('Failed to declare the queue');
