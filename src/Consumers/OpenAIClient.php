@@ -25,7 +25,7 @@ class OpenAIClient
         $this->mq = $config['mq'];
         $this->sync = $config['sync'];
         $this->sql = $config['sql'];
-        $this->log->debug('construct');
+        $this->log->debug('OpenAIClient::construct');
     }
 
     private function validateConfig(array $config): bool
@@ -46,9 +46,13 @@ class OpenAIClient
 
     public function init(): bool
     {
-        $this->log->debug('init');
+        $this->log->debug('OpenAIClient::init');
         $this->discord_id = $this->getId();
-        $this->mq->consume('openai', $this->callback(...)) or throw new Error('failed to connect to queue');
+        $sharing_queue = 'openai';
+        $private_queue = $this->log->getName();
+        $this->sync->queueDeclare($private_queue, true) or throw new Error('failed to declare private queue');
+        $this->mq->consume($sharing_queue, $this->callback(...)) or throw new Error('failed to connect to sharing queue');
+        $this->mq->consume($private_queue, $this->callback(...)) or throw new Error('failed to connect to private queue');
         return true;
     }
 
@@ -77,7 +81,6 @@ class OpenAIClient
 
     private function getId(): string
     {
-        $this->log->debug('getId');
         $result = $this->sql->query('SELECT `discord_id` FROM `discord_tokens` LIMIT 1');
         if ($result === false) throw new Error('failed to get discord_id');
         if ($result->num_rows === 0) throw new Error('no discord_id found');

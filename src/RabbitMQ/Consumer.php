@@ -32,6 +32,7 @@ class Consumer
 
     public function disconnect(): bool
     {
+        $this->log->debug('Consumer::disconnect');
         if (isset($this->channel)) {
             foreach ($this->consumers as $consumerTag => $queue) {
                 $this->channel->cancel($consumerTag);
@@ -47,6 +48,7 @@ class Consumer
 
     public function __destruct()
     {
+        $this->log->debug('Consumer::__destruct');
         $this->disconnect() or throw new Error('Failed to disconnect from RabbitMQ');
     }
 }
