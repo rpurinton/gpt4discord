@@ -78,8 +78,12 @@ class DiscordClient
     private function raw(stdClass $message, Discord $discord): bool // from Discord\Discord::onRaw
     {
         $this->log->debug('raw', ['message' => $message]);
-        if ($message->op === 11) $this->sql->query('SELECT 1'); // heartbeat / keep MySQL connection alive
-        $this->pub->publish('openai', $message) or throw new Error('failed to publish message to openai');
+        $queue = 'openai';
+        if ($message->op === 11) {
+            $this->sql->query('SELECT 1'); // heartbeat / keep MySQL connection alive
+            $queue = 'amq.fanout'; // send heartbeat to all consumers
+        }
+        $this->pub->publish($queue, $message) or throw new Error('failed to publish message to openai');
         return true;
     }
 
