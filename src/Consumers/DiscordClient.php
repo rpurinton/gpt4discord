@@ -65,6 +65,8 @@ class DiscordClient
 
     private function ready()
     {
+        $sharing_queue = 'discord';
+        $this->pub->queueDeclare($sharing_queue, false) or throw new Error('failed to declare private queue');
         $this->mq->consume('discord', $this->callback(...)) or throw new Error('failed to connect to queue');
         $activity = $this->discord->factory(Activity::class, [
             'name' => 'AI Language Model',

@@ -50,6 +50,7 @@ class OpenAIClient
         $this->discord_id = $this->getId();
         $sharing_queue = 'openai';
         $private_queue = $this->log->getName();
+        $this->sync->queueDeclare($sharing_queue, false) or throw new Error('failed to declare private queue');
         $this->sync->queueDeclare($private_queue, true) or throw new Error('failed to declare private queue');
         $this->mq->consume($sharing_queue, $this->callback(...)) or throw new Error('failed to connect to sharing queue');
         $this->mq->consume($private_queue, $this->callback(...)) or throw new Error('failed to connect to private queue');
