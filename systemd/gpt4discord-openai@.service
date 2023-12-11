@@ -5,8 +5,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=root
-Group=root
+User=gpt4discord
+Group=gpt4discord
 ExecStart=/var/www/gpt4discord/scripts/openaiclient.php %i
 Restart=on-failure
 RestartSec=5
