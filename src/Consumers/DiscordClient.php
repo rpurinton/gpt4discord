@@ -81,7 +81,7 @@ class DiscordClient
         $queue = 'openai';
         if ($message->op === 11) {
             $this->sql->query('SELECT 1'); // heartbeat / keep MySQL connection alive
-            $queue = 'amq.fanout'; // send heartbeat to all consumers
+            $queue = 'fanout'; // send heartbeat to all consumers
         }
         $this->pub->publish($queue, $message) or throw new Error('failed to publish message to openai');
         return true;

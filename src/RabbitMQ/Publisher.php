@@ -22,7 +22,7 @@ class Publisher
     {
         $result = false;
         try {
-            $result = $this->channel->publish(json_encode($data), [], '', $queue) or throw new Error('Failed to publish the message');
+            $result = $this->channel->publish(json_encode($data), [], $queue) or throw new Error('Failed to publish the message');
         } catch (\Throwable $e) {
             $this->log->error($e->getMessage(), ['trace' => $e->getTrace()]);
         } catch (\Error $e) {
