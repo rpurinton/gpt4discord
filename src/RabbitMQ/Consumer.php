@@ -26,7 +26,7 @@ class Consumer
         $this->log->debug('Consumer::consume', [$queue]);
         $consumerTag = bin2hex(random_bytes(8));
         $this->consumers[$consumerTag] = $queue;
-        $this->channel->queueDeclare($queue, false, false, false, true) or throw new Error('Failed to declare the queue');
+        //$this->channel->queueDeclare($queue, false, false, false, true) or throw new Error('Failed to declare the queue');
         return Async\await($this->channel->consume($process, $queue, $consumerTag)) or throw new Error('Failed to consume the queue');
     }
 
