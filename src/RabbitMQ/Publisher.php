@@ -21,7 +21,6 @@ class Publisher
 
     public function queueDeclare($queue, $broadcast = false): bool
     {
-        $this->log->debug('Publisher::declare', [$queue]);
         $this->channel->queueDeclare($queue, false, false, false, true) or throw new Error('Failed to declare the queue');
         if ($broadcast) $this->channel->queueBind($queue, 'broadcast') or throw new Error('Failed to bind the queue');
         return true;
