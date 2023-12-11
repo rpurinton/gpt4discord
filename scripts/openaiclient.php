@@ -36,7 +36,7 @@ $loop = Loop::get();
 $ih = new OpenAIClient([
     'log' => $log,
     'loop' => $loop,
-    'mq' => new Consumer,
+    'mq' => new Consumer($log, $loop),
     'sync' => new Sync($log),
     'sql' => new MySQL($log)
 ]) or throw new Error('failed to create Consumer');

@@ -48,7 +48,7 @@ class OpenAIClient
     {
         $this->log->debug('init');
         $this->discord_id = $this->getId();
-        $this->mq->connect($this->loop, 'openai', $this->callback(...)) or throw new Error('failed to connect to queue');
+        $this->mq->consume('openai', $this->callback(...)) or throw new Error('failed to connect to queue');
         return true;
     }
 

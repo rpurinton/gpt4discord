@@ -2,7 +2,7 @@
 
 namespace RPurinton\GPT4discord\RabbitMQ;
 
-use RPurinton\GPT4discord\{Config, Error};
+use RPurinton\GPT4discord\{Config, Log, Error};
 use React\{Async, EventLoop\LoopInterface};
 use Bunny\{Async\Client, Channel};
 
@@ -10,25 +10,31 @@ class Consumer
 {
     private ?Client $client = null;
     private ?Channel $channel = null;
-    private ?string $consumerTag = null;
-    private ?string $queue = null;
+    private array $consumers = [];
 
-    public function connect(LoopInterface $loop, string $queue, callable $process): mixed
+    public function __construct(private Log $log, private LoopInterface $loop)
     {
-        $this->queue = $queue;
-        $this->consumerTag = bin2hex(random_bytes(8));
-        $this->client = new Client($loop, Config::get('rabbitmq')) or throw new Error('Failed to establish the client');
+        $this->client = new Client($this->loop, Config::get('rabbitmq')) or throw new Error('Failed to establish the client');
         $this->client = Async\await($this->client->connect()) or throw new Error('Failed to establish the connection');
         $this->channel = Async\await($this->client->channel()) or throw new Error('Failed to establish the channel');
         $this->channel->qos(0, 1) or throw new Error('Failed to set the QoS');
-        return Async\await($this->channel->consume($process, $this->queue, $this->consumerTag)) or throw new Error('Failed to consume the queue');
+    }
+
+    public function consume(string $queue, callable $process): mixed
+    {
+        $consumerTag = bin2hex(random_bytes(8));
+        $this->consumers[$consumerTag] = $queue;
+        $this->channel->queueDeclare($queue, false, false, false, true) or throw new Error('Failed to declare the queue');
+        return Async\await($this->channel->consume($process, $queue, $consumerTag)) or throw new Error('Failed to consume the queue');
     }
 
     public function disconnect(): bool
     {
         if (isset($this->channel)) {
-            $this->channel->cancel($this->consumerTag);
-            $this->channel->queueDelete($this->queue);
+            foreach ($this->consumers as $consumerTag => $queue) {
+                $this->channel->cancel($consumerTag);
+                $this->channel->queueDelete($queue);
+            }
             $this->channel->close();
         }
         if (isset($this->client)) {

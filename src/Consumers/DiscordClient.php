@@ -65,7 +65,7 @@ class DiscordClient
 
     private function ready()
     {
-        $this->mq->connect($this->loop, 'discord', $this->callback(...)) or throw new Error('failed to connect to queue');
+        $this->mq->consume('discord', $this->callback(...)) or throw new Error('failed to connect to queue');
         $activity = $this->discord->factory(Activity::class, [
             'name' => 'AI Language Model',
             'type' => Activity::TYPE_PLAYING
