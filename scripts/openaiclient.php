@@ -4,7 +4,7 @@
 namespace RPurinton\GPT4discord;
 
 use React\EventLoop\Loop;
-use RPurinton\GPT4discord\RabbitMQ\{Consumer, Publisher};
+use RPurinton\GPT4discord\RabbitMQ\{Consumer, Sync};
 use RPurinton\GPT4discord\Consumers\OpenAIClient;
 
 $worker_id = $argv[1] ?? 0;
@@ -37,7 +37,7 @@ $ih = new OpenAIClient([
     'log' => $log,
     'loop' => $loop,
     'mq' => new Consumer,
-    'pub' => new Publisher($log),
+    'sync' => new Sync($log),
     'sql' => new MySQL($log)
 ]) or throw new Error('failed to create Consumer');
 $ih->init() or throw new Error('failed to initialize Consumer');

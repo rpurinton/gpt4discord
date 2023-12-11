@@ -3,15 +3,15 @@
 namespace RPurinton\GPT4discord\RabbitMQ;
 
 use RPurinton\GPT4discord\{Config, Error, Log};
-use Bunny\{Client, Channel};
+use Bunny\{Client, Channel, Exception\BunnyException};
 use stdClass;
 
 class Publisher
 {
-    private ?Client $client = null;
-    private ?Channel $channel = null;
+    protected ?Client $client = null;
+    protected ?Channel $channel = null;
 
-    public function __construct(private Log $log)
+    public function __construct(protected Log $log)
     {
         $this->client = new Client(Config::get('rabbitmq')) or throw new Error('Failed to establish the client');
         $this->client = $this->client->connect() or throw new Error('Failed to establish the connection');
@@ -29,7 +29,7 @@ class Publisher
             $this->log->error($e->getMessage(), ['trace' => $e->getTrace()]);
         } catch (\Exception $e) {
             $this->log->error($e->getMessage(), ['trace' => $e->getTrace()]);
-        } catch (\Bunny\Exception\BunnyException $e) {
+        } catch (BunnyException $e) {
             $this->log->error($e->getMessage(), ['trace' => $e->getTrace()]);
         }
         return $result;

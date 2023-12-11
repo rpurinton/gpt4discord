@@ -5,16 +5,17 @@ namespace RPurinton\GPT4discord\Consumers;
 use Bunny\{Channel, Message};
 use React\EventLoop\LoopInterface;
 use RPurinton\GPT4discord\{Log, Error, MySQL};
-use RPurinton\GPT4discord\RabbitMQ\{Consumer, Publisher};
+use RPurinton\GPT4discord\RabbitMQ\{Consumer, Sync};
 
 class OpenAIClient
 {
-    private ?int $id = null;
+    private ?int $discord_id = null;
     private ?Log $log = null;
     private ?LoopInterface $loop = null;
     private ?Consumer $mq = null;
-    private ?Publisher $pub = null;
+    private ?Sync $sync = null;
     private ?MySQL $sql = null;
+    private $ai = null;
 
     public function __construct(private array $config)
     {
@@ -22,7 +23,7 @@ class OpenAIClient
         $this->log = $config['log'];
         $this->loop = $config['loop'];
         $this->mq = $config['mq'];
-        $this->pub = $config['pub'];
+        $this->sync = $config['sync'];
         $this->sql = $config['sql'];
         $this->log->debug('construct');
     }
@@ -33,7 +34,7 @@ class OpenAIClient
             'log' => 'RPurinton\GPT4discord\Log',
             'loop' => 'React\EventLoop\LoopInterface',
             'mq' => 'RPurinton\GPT4discord\RabbitMQ\Consumer',
-            'pub' => 'RPurinton\GPT4discord\RabbitMQ\Publisher',
+            'sync' => 'RPurinton\GPT4discord\RabbitMQ\Sync',
             'sql' => 'RPurinton\GPT4discord\MySQL'
         ];
         foreach ($requiredKeys as $key => $class) {
@@ -46,7 +47,7 @@ class OpenAIClient
     public function init(): bool
     {
         $this->log->debug('init');
-        $this->id = $this->getId();
+        $this->discord_id = $this->getId();
         $this->mq->connect($this->loop, 'openai', $this->callback(...)) or throw new Error('failed to connect to queue');
         return true;
     }
@@ -58,7 +59,7 @@ class OpenAIClient
         if ($content['op'] === 11) // heartbeat
         {
             $this->sql->query('SELECT 1'); // keep MySQL connection alive
-            $this->pub->publish('discord', $content) or throw new Error('failed to publish message to discord');
+            $this->sync->publish('discord', $content) or throw new Error('failed to publish message to discord');
         } else $this->route($content) or throw new Error('failed to route message');
         $channel->ack($message);
         return true;
@@ -70,14 +71,6 @@ class OpenAIClient
         switch ($content['t']) {
             case 'MESSAGE_CREATE':
                 return $this->messageCreate($content['d']);
-            case 'MESSAGE_UPDATE':
-                return $this->messageUpdate($content['d']);
-            case 'MESSAGE_DELETE':
-                return $this->messageDelete($content['d']);
-            case 'MESSAGE_REACTION_ADD':
-                return $this->messageReactionAdd($content['d']);
-            case 'MESSAGE_REACTION_REMOVE':
-                return $this->messageReactionRemove($content['d']);
         }
         return true;
     }
@@ -107,8 +100,8 @@ class OpenAIClient
         $this->log->debug('messageCreate', ['data' => $data]);
         $log_id = 0;
         if (isset($message['attachments']) && count($message['attachments']) && substr($message['attachments'][0]['content_type'], 0, 5) == 'image') $image_url = $message['attachments'][0]['url'];
-        if ($data['author']['id'] === $this->id) return true; // ignore messages from self
-        if ($data['content'] === '!ping') $this->pub->publish('discord', [
+        if ($data['author']['id'] === $this->discord_id) return true; // ignore messages from self
+        if ($data['content'] === '!ping') $this->sync->publish('discord', [
             'op' => 0, // DISPATCH
             't' => 'MESSAGE_CREATE',
             'd' => [
@@ -116,31 +109,8 @@ class OpenAIClient
                 'channel_id' => $data['channel_id']
             ]
         ]) or throw new Error('failed to publish message to discord');
-        return true;
-    }
-
-    // placeholders only for other functions for now
-    private function messageUpdate(array $data): bool
-    {
-        $this->log->debug('messageUpdate', ['data' => $data]);
-        return true;
-    }
-
-    private function messageDelete(array $data): bool
-    {
-        $this->log->debug('messageDelete', ['data' => $data]);
-        return true;
-    }
-
-    private function messageReactionAdd(array $data): bool
-    {
-        $this->log->debug('messageReactionAdd', ['data' => $data]);
-        return true;
-    }
-
-    private function messageReactionRemove(array $data): bool
-    {
-        $this->log->debug('messageReactionRemove', ['data' => $data]);
+        if (isset($data['referenced_message']) && $data['referenced_message']["author"]["id"] == $this->discord_id) $relevant = true;
+        $this->log->debug('messageCreate', ['relevant' => $relevant]);
         return true;
     }
 
