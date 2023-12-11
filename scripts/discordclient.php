@@ -36,7 +36,7 @@ $loop = Loop::get();
 $dc = new DiscordClient([
     'log' => $log,
     'loop' => $loop,
-    'mq' => new Consumer,
+    'mq' => new Consumer($log, $loop),
     'pub' => new Publisher($log),
     'sql' => new MySQL($log)
 ]) or throw new Error('failed to create DiscordClient');
