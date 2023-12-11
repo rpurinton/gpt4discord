@@ -102,8 +102,8 @@ class OpenAIClient
     private function messageCreate(array $data): bool
     {
         $this->log->debug('messageCreate', ['data' => $data]);
+        $relevant = false;
         $log_id = 0;
-        if (isset($message['attachments']) && count($message['attachments']) && substr($message['attachments'][0]['content_type'], 0, 5) == 'image') $image_url = $message['attachments'][0]['url'];
         if ($data['author']['id'] == $this->discord_id) return true; // ignore messages from self
         if ($data['content'] === '!ping') $this->sync->publish('discord', [
             'op' => 0, // DISPATCH
@@ -114,7 +114,6 @@ class OpenAIClient
             ]
         ]) or throw new Error('failed to publish message to discord');
         if (isset($data['referenced_message']) && $data['referenced_message']["author"]["id"] == $this->discord_id) $relevant = true;
-        $this->log->debug('messageCreate', ['relevant' => $relevant]);
         return true;
     }
 
