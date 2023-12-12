@@ -23,7 +23,7 @@
             background: red;
             position: absolute;
             top: calc(50% - 50px);
-            left: -100px;
+            left: calc(50% - 50px);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -70,7 +70,38 @@
         </div>
     </div>
     <script>
-        // We'll add the JavaScript code here later to animate the circles.
+        // Get the elements
+        const circleA = document.getElementById('circleA');
+        const circleB = document.getElementById('circleB');
+
+        // Define the radius for both circles
+        const radiusB = circleB.offsetWidth / 2;
+        const radiusA = circleA.offsetWidth / 2;
+
+        // Calculate the distance from center to center
+        const distanceBetweenCenters = radiusB + radiusA;
+
+        // Define the animation properties
+        let angle = 0; // The initial angle
+        const speed = 0.01; // The speed of the animation, adjust as necessary
+
+        function animate() {
+            // Calculate the new position
+            let x = distanceBetweenCenters * Math.cos(angle);
+            let y = distanceBetweenCenters * Math.sin(angle);
+
+            // Update the position of circle A
+            circleA.style.transform = `translate(${x}px, ${y}px)`;
+
+            // Update the angle
+            angle += speed;
+
+            // Continuously call the animate function
+            requestAnimationFrame(animate);
+        }
+
+        // Start the animation
+        animate();
     </script>
 </body>
 
