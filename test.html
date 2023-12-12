@@ -7,36 +7,26 @@
     <style>
         #circleB {
             width: 300px;
-            /* size of circle B */
             height: 300px;
             border-radius: 50%;
             background: blue;
             position: relative;
-            left: 150px;
-            /* to center circle B in the animation area */
-            top: 150px;
         }
 
         #circleA {
             width: 100px;
-            /* size of circle A which is 1/3 of circle B */
             height: 100px;
             border-radius: 50%;
             background: red;
             position: absolute;
-            left: -50px;
-            /* position circle A to touch the perimeter of circle B */
-            top: 150px;
-            /* aligns vertically with the center of circle B */
         }
 
         #animationArea {
             position: relative;
-            width: 600px;
-            /* should be large enough to contain the full motion */
-            height: 600px;
-            overflow: hidden;
-            /* to keep everything contained */
+            height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
     </style>
 </head>
@@ -48,7 +38,7 @@
         </div>
     </div>
     <script>
-
+        // We'll add the JavaScript code here later to animate the circles.
     </script>
 </body>
 
