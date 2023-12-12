@@ -66,10 +66,10 @@
         .tick {
             position: absolute;
             bottom: 50%;
-            left: 50%;
-            width: 2px;
-            height: 10px;
-            background: white;
+            left: calc(50% - 5px);
+            width: 10px;
+            height: 2px;
+            background: green;
             transform-origin: bottom center;
         }
     </style>
@@ -91,7 +91,6 @@
                 <div class="tick"></div>
                 <div class="tick"></div>
                 <div class="tick"></div>
-                <!-- Add as many ticks as you want -->
             </div>
             <div class="centerPoint">
                 <div class="label" id="labelB">B</div>
@@ -102,7 +101,14 @@
                     <div class="tick"></div>
                     <div class="tick"></div>
                     <div class="tick"></div>
-                    <!-- Add as many ticks as you want -->
+                    <div class="tick"></div>
+                    <div class="tick"></div>
+                    <div class="tick"></div>
+                    <div class="tick"></div>
+                    <div class="tick"></div>
+                    <div class="tick"></div>
+                    <div class="tick"></div>
+                    <div class="tick"></div>
                 </div>
                 <div class="centerPoint">
                     <div class="label" id="labelA">A</div>
@@ -139,12 +145,12 @@
         const tickAngleB = 2 * Math.PI / ticksB.length;
 
         ticksA.forEach((tick, index) => {
-            let angle = tickAngleA * index;
+            let angle = tickAngleA * index + Math.PI / 2;
             tick.style.transform = `rotate(${angle}rad) translate(${radiusA}px)`;
         });
 
         ticksB.forEach((tick, index) => {
-            let angle = tickAngleB * index;
+            let angle = tickAngleB * index + Math.PI / 2;
             tick.style.transform = `rotate(${angle}rad) translate(${radiusB}px)`;
         });
 
@@ -163,16 +169,13 @@
             angle += speed;
 
             ticksA.forEach((tick, index) => {
-                let tickAngle = 2 * Math.PI * index / ticksA.length;
-                tick.style.transform = `rotate(${tickAngle}rad)`;
+                let angle = tickAngleA * index + Math.PI / 2;
+                tick.style.transform = `rotate(${angle}rad) translate(${radiusA}px)`;
             });
 
             // Continuously call the animate function
             requestAnimationFrame(animate);
         }
-
-        // Start the animation
-        animate();
 
         // Start the animation
         animate();
