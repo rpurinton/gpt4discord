@@ -114,6 +114,8 @@ class OpenAIClient
             ]
         ]) or throw new Error('failed to publish message to discord');
         if (isset($data['referenced_message']) && $data['referenced_message']["author"]["id"] == $this->discord_id) $relevant = true;
+        // TODO: check if bot role or bot is mentioned
+        // TODO: check if user is in an allowed user role
         return true;
     }
 
