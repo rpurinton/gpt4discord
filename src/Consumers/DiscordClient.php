@@ -73,14 +73,6 @@ class DiscordClient
             'type' => Activity::TYPE_PLAYING
         ]);
         $this->discord->updatePresence($activity);
-        $role_message = [
-            'op' => 0,
-            't' => 'GUILD_ROLE_CREATE',
-        ];
-        foreach ($this->discord->guilds as $guild) foreach ($guild->roles as $role) {
-            $role_message['d'] = $role;
-            $this->pub->publish('broadcast', $role_message);
-        }
         $this->discord->on('raw', $this->raw(...));
         return true;
     }
