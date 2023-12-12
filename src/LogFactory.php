@@ -1,6 +1,6 @@
 <?php
 
-namespace RPurinton\Framework2;
+namespace RPurinton\GPT4discord;
 
 use Monolog\Level;
 use Monolog\Handler\StreamHandler;
@@ -10,7 +10,7 @@ class LogFactory
     static function create($name): Log
     {
         $log = self::pushHandlers(self::createLogger($name), self::getConfigs());
-        $log->debug("Log created");
+        $log->debug('Log created');
         return $log;
     }
 
@@ -44,7 +44,7 @@ class LogFactory
     static function validateConfig(array $config): void
     {
         if (!isset($config['path'], $config['level'])) {
-            throw new Error("Logging path or level not defined in config/logs.json!");
+            throw new Error('Logging path or level not defined in config/logs.json!');
         }
     }
 
@@ -57,7 +57,7 @@ class LogFactory
             $path = self::getBasePath() . DIRECTORY_SEPARATOR . $path;
         }
         if (!is_dir(dirname($path))) {
-            shell_exec("mkdir -p " . dirname($path));
+            shell_exec('mkdir -p ' . dirname($path));
         }
         return $path;
     }
@@ -73,7 +73,7 @@ class LogFactory
             'CRITICAL' => Level::Critical,
             'ALERT' => Level::Alert,
             'EMERGENCY' => Level::Emergency,
-            default => throw new Error("Invalid logging level ($level) set in config/logs.json!"),
+            default => throw new Error('Invalid logging level ($level) set in config/logs.json!'),
         };
     }
 }

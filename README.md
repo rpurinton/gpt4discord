@@ -1,3 +1,5 @@
-# gpt4discord
+# GPT4discord
 
-A basic GPT4 bot for discord.  More info coming soon.
+Simple ChatGPT Bot for Discord
+
+Requires Composer, MySQL, RabbitMQ, and credentials for Discord and OpenAI

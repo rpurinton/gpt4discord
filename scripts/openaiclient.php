@@ -4,8 +4,8 @@
 namespace RPurinton\GPT4discord;
 
 use React\EventLoop\Loop;
-use RPurinton\GPT4discord\RabbitMQ\{Consumer, Publisher};
-use RPurinton\GPT4discord\Consumers\DiscordClient;
+use RPurinton\GPT4discord\RabbitMQ\{Consumer, Sync};
+use RPurinton\GPT4discord\Consumers\OpenAIClient;
 
 $worker_id = $argv[1] ?? 0;
 
@@ -15,7 +15,7 @@ ini_set('display_errors', '1');
 
 try {
     require_once __DIR__ . '/../Composer.php';
-    $log = LogFactory::create('DiscordClient-' . $worker_id) or throw new Error('failed to create log');
+    $log = LogFactory::create('OpenAIClient-' . $worker_id) or throw new Error('failed to create log');
     set_exception_handler(function ($e) use ($log) {
         $log->debug($e->getMessage(), ['trace' => $e->getTrace()]);
         $log->error($e->getMessage());
@@ -33,14 +33,14 @@ try {
 }
 
 $loop = Loop::get();
-$dc = new DiscordClient([
+$ih = new OpenAIClient([
     'log' => $log,
     'loop' => $loop,
     'mq' => new Consumer($log, $loop),
-    'pub' => new Publisher($log),
+    'sync' => new Sync($log),
     'sql' => new MySQL($log)
-]) or throw new Error('failed to create DiscordClient');
-$dc->init() or throw new Error('failed to initialize DiscordClient');
+]) or throw new Error('failed to create Consumer');
+$ih->init() or throw new Error('failed to initialize Consumer');
 $loop->addSignal(SIGINT, function () use ($loop, $log) {
     $log->info('SIGINT received, exiting...');
     $loop->stop();
