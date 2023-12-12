@@ -11,6 +11,9 @@
             border-radius: 50%;
             background: blue;
             position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         #circleA {
@@ -19,6 +22,12 @@
             border-radius: 50%;
             background: red;
             position: absolute;
+            top: calc(50% - 50px);
+            left: -100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
         }
 
         #animationArea {
@@ -28,13 +37,36 @@
             justify-content: center;
             align-items: center;
         }
+
+        .centerPoint {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: black;
+            position: absolute;
+        }
+
+        .label {
+            position: absolute;
+            font-size: 24px;
+            color: white;
+            top: calc(50% - 36px);
+            left: calc(50% - 8px);
+        }
     </style>
 </head>
 
 <body>
     <div id="animationArea">
         <div id="circleB">
-            <div id="circleA"></div>
+            <div class="centerPoint">
+                <div class="label" id="labelB">B</div>
+            </div>
+            <div id="circleA">
+                <div class="centerPoint">
+                    <div class="label" id="labelA">A</div>
+                </div>
+            </div>
         </div>
     </div>
     <script>
