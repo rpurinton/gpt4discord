@@ -60,12 +60,7 @@ class OpenAIClient
     public function callback(Message $message, Channel $channel): bool
     {
         $this->log->debug('callback', [$message->content]);
-        $content = json_decode($message->content, true);
-        if ($content['op'] === 11) // heartbeat
-        {
-            $this->sql->query('SELECT 1'); // keep MySQL connection alive
-            $this->sync->publish('discord', $content) or throw new Error('failed to publish message to discord');
-        } else $this->route($content) or throw new Error('failed to route message');
+        $this->route(json_decode($message->content, true)) or throw new Error('failed to route message');
         $channel->ack($message);
         return true;
     }
@@ -73,10 +68,19 @@ class OpenAIClient
     private function route(array $content): bool
     {
         $this->log->debug('route', [$content['t']]);
+        if ($content['op'] === 11) return $this->heartbeat($content);
         switch ($content['t']) {
             case 'MESSAGE_CREATE':
                 return $this->messageCreate($content['d']);
         }
+        return true;
+    }
+
+    private function heartbeat(array $content): bool
+    {
+        $this->log->debug('heartbeat', [$content]);
+        $this->sql->query('SELECT 1'); // keep MySQL connection alive
+        $this->sync->publish('discord', $content) or throw new Error('failed to publish message to discord');
         return true;
     }
 
@@ -86,12 +90,12 @@ class OpenAIClient
         if ($result === false) throw new Error('failed to get discord_id');
         if ($result->num_rows === 0) throw new Error('no discord_id found');
         $row = $result->fetch_assoc();
-        $id = $row['discord_id'];
-        $this->validateId($id);
+        $id = $row['discord_id'] ?? null;
+        $this->validateId($id) or throw new Error('invalid discord_id');
         return $id;
     }
 
-    private function validateId(int|string $id)
+    private function validateId(int|string $id): bool
     {
         $this->log->debug('validateId', ['id' => $id, 'type' => gettype($id)]);
         if (!is_numeric($id)) throw new Error('id is not numeric');
@@ -103,24 +107,36 @@ class OpenAIClient
     {
         $this->log->debug('messageCreate', ['data' => $data]);
         $relevant = false;
-        $log_id = 0;
         if ($data['author']['id'] == $this->discord_id) return true; // ignore messages from self
-        if ($data['content'] === '!ping') $this->sync->publish('discord', [
+        if (!$this->allowedRoles($data['member']['roles'])) return true; // ignore messages from non-allowed roles
+        if (isset($data['referenced_message']) && $data['referenced_message']["author"]["id"] == $this->discord_id) $relevant = true;
+        // TODO: check if bot role or bot is mentioned
+        if (!$relevant) return true;
+        return true;
+    }
+
+    private function allowedRoles(array $roles): bool
+    {
+        // TODO: Implement actual logic
+        //foreach ($roles as $role) if (in_array($role, $this->config['allowed_roles'])) return true;
+        return false;
+    }
+
+    private function pong(int $channel_id): bool
+    {
+        $this->sync->publish('discord', [
             'op' => 0, // DISPATCH
             't' => 'MESSAGE_CREATE',
             'd' => [
-                'content' => 'Pong!',
-                'channel_id' => $data['channel_id']
+                'content' => 'pong',
+                'channel_id' => $channel_id,
             ]
         ]) or throw new Error('failed to publish message to discord');
-        if (isset($data['referenced_message']) && $data['referenced_message']["author"]["id"] == $this->discord_id) $relevant = true;
-        // TODO: check if bot role or bot is mentioned
-        // TODO: check if user is in an allowed user role
         return true;
     }
 
     public function __destruct()
     {
-        $this->mq->disconnect() or throw new Error('failed to disconnect from RabbitMQ');
+        $this->log->debug('OpenAIClient::__destruct');
     }
 }
