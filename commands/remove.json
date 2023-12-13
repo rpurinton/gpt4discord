@@ -1,0 +1,40 @@
+{
+    "name": "remove",
+    "name_localizations": {
+        "en-US": "remove",
+        "pt-BR": "remover",
+        "es-ES": "eliminar",
+        "zh-CN": "移除",
+        "ko": "제거하다"
+    },
+    "description": "Remove a user or role from using the bot",
+    "description_localizations": {
+        "en-US": "Remove a user or role from using the bot",
+        "pt-BR": "Remover um usuário ou cargo de usar o bot",
+        "es-ES": "Eliminar un usuario o rol de usar el bot",
+        "zh-CN": "移除用户或角色的机器人使用权限",
+        "ko": "사용자 또는 역할의 봇 사용 권한을 제거"
+    },
+    "options": [
+        {
+            "name": "user_or_role",
+            "name_localizations": {
+                "en-US": "user_or_role",
+                "pt-BR": "usuário_ou_cargo",
+                "es-ES": "usuario_o_rol",
+                "zh-CN": "用户或角色",
+                "ko": "사용자_또는_역할"
+            },
+            "description": "The user or role to remove",
+            "description_localizations": {
+                "en-US": "The user or role to remove",
+                "pt-BR": "O usuário ou cargo a remover",
+                "es-ES": "El usuario o rol a eliminar",
+                "zh-CN": "要移除的用户或角色",
+                "ko": "제거할 사용자 또는 역할"
+            },
+            "type": 6,
+            "required": true
+        }
+    ]
+}

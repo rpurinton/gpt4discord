@@ -1,0 +1,40 @@
+{
+    "name": "allow",
+    "name_localizations": {
+        "en-US": "allow",
+        "pt-BR": "permitir",
+        "es-ES": "permitir",
+        "zh-CN": "允许",
+        "ko": "허용하다"
+    },
+    "description": "Allow a user or role to use the bot",
+    "description_localizations": {
+        "en-US": "Allow a user or role to use the bot",
+        "pt-BR": "Permitir que um usuário ou cargo use o bot",
+        "es-ES": "Permitir que un usuario o rol use el bot",
+        "zh-CN": "允许用户或角色使用机器人",
+        "ko": "사용자 또는 역할이 봇을 사용하도록 허용"
+    },
+    "options": [
+        {
+            "name": "user_or_role",
+            "name_localizations": {
+                "en-US": "user_or_role",
+                "pt-BR": "usuário_ou_cargo",
+                "es-ES": "usuario_o_rol",
+                "zh-CN": "用户或角色",
+                "ko": "사용자_또는_역할"
+            },
+            "description": "The user or role to allow",
+            "description_localizations": {
+                "en-US": "The user or role to allow",
+                "pt-BR": "O usuário ou cargo a permitir",
+                "es-ES": "El usuario o rol a permitir",
+                "zh-CN": "要允许的用户或角色",
+                "ko": "허용할 사용자 또는 역할"
+            },
+            "type": 6,
+            "required": true
+        }
+    ]
+}

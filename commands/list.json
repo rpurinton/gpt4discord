@@ -1,0 +1,40 @@
+{
+    "name": "list",
+    "name_localizations": {
+        "en-US": "list",
+        "pt-BR": "listar",
+        "es-ES": "listar",
+        "zh-CN": "列出",
+        "ko": "목록"
+    },
+    "description": "List all currently allowed users and roles",
+    "description_localizations": {
+        "en-US": "List all currently allowed users and roles",
+        "pt-BR": "Listar todos os usuários e cargos atualmente permitidos",
+        "es-ES": "Listar todos los usuarios y roles actualmente permitidos",
+        "zh-CN": "列出当前允许的所有用户和角色",
+        "ko": "현재 허용된 모든 사용자 및 역할 목록"
+    },
+    "options": [
+        {
+            "name": "user_or_role",
+            "name_localizations": {
+                "en-US": "user_or_role",
+                "pt-BR": "usuário_ou_cargo",
+                "es-ES": "usuario_o_rol",
+                "zh-CN": "用户或角色",
+                "ko": "사용자_또는_역할"
+            },
+            "description": "Specify a user or role to list",
+            "description_localizations": {
+                "en-US": "Specify a user or role to list",
+                "pt-BR": "Especificar um usuário ou cargo para listar",
+                "es-ES": "Especificar un usuario o rol para listar",
+                "zh-CN": "指定要列出的用户或角色",
+                "ko": "목록에 지정할 사용자 또는 역할"
+            },
+            "type": 6,
+            "required": false
+        }
+    ]
+}
