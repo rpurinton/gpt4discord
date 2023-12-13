@@ -1,4 +1,5 @@
 {
-    "added": "Role added!",
-    "removed": "Role removed!"
+    "allow": "Allowed!",
+    "remove": "Removed!",
+    "list": "Allowed Users and Roles"
 }

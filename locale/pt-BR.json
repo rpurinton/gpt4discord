@@ -1,4 +1,5 @@
 {
-    "added": "Função adicionada!",
-    "removed": "Função removida!"
+    "allow": "Função adicionada!",
+    "remove": "Função removida!",
+    "list": "Funções:"
 }
